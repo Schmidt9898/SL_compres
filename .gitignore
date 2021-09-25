@@ -1,0 +1,15 @@
+
+*.pdb
+*.cache
+*.txt
+C#tomor/obj/*
+C#tomor/bin/*
+*/.vs/*
+C#tomor/STomorito.csproj
+*.vcxproj
+*.filters
+*.user
+Cplusplus_tomor_base/Debug/*
+Cplusplus_tomor_base/files/*
+Cplusplus_tomor_base/Release/*
+
