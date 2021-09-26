@@ -1,4 +1,12 @@
 #include "Huffman.h"
+
+std::string bitToString(unsigned int& a)
+{
+	std::bitset<32> bits(a);
+	return bits.to_string();
+}
+
+
 inline int ByteLengthFromCodeLenght(short codelength)
 {
 	return (codelength % 8 == 0) ? codelength / 8 : codelength / 8 + 1;
@@ -21,12 +29,13 @@ int Huffman::EntrycompareIntervalbylength(const void* a, const void* b)
 Huffman::Huffman()
 {
 	outputbuffer = new char[outputbuffer_size] {};
+	
 	//TODO init outputfile for writing
 }
-Huffman::Huffman(std::string outputfilename) : outpuf_file_name(outputfilename)
+/*Huffman::Huffman(std::string outputfilename) : outpuf_file_name(outputfilename)
 {
 	Huffman();
-}
+}*/
 Huffman::~Huffman()
 {
 	//TODO free/delete tree, dictionary, arrays, buffers, close open files
@@ -36,16 +45,27 @@ Huffman::~Huffman()
 //Huffman::
 //public functions :
 
-
-void Writedicttofile(Huffman::Entry* arr,size_t arrsize,std::ofstream* stream)
+//make one where dict containse the name later
+void Huffman::WriteEntrydictionarytofile(Huffman::Entry* arr,size_t arrsize,std::ofstream* stream)
 {
 	//Entry to byte
 	//char* dist = (char*)arr;
-	size_t size = arrsize * sizeof(Huffman::Entry);
-	stream->write((char*)&size, sizeof(size_t));
+	//size_t size = arrsize;
+	stream->write((char*)&arrsize, sizeof(size_t));
 	stream->write((char*)arr, arrsize * sizeof(Huffman::Entry));
 	stream->flush();
 
+}/*
+ //TODO discription
+ */
+size_t Huffman::ReadEntrydictionaryfromfile(Huffman::Entry* &arr, std::ifstream* stream)
+{
+	//Entry to byte
+	size_t dictionary_length = 0;
+	stream->read((char*)&dictionary_length, sizeof(size_t));
+	arr = new Entry[dictionary_length]();
+	stream->read((char*)arr, dictionary_length * sizeof(Entry));
+	return dictionary_length;
 }
 
 
@@ -53,19 +73,48 @@ void Writedicttofile(Huffman::Entry* arr,size_t arrsize,std::ofstream* stream)
 
 void Huffman::Compres(std::string sourcefilename)
 {
-	Prepare_file(sourcefilename);
+	//Prepare_file(sourcefilename);
+	infile_name = sourcefilename;
+	outpuf_file_name = sourcefilename + ".huff";
+
+
+	//make outputfile and inputfile
+	//TODO string kiterjesztés eltávolítása és lecserélése
+	if (infile) {
+		infile->close();
+		delete infile;
+	}
+	infile = new std::ifstream(sourcefilename, std::ios_base::binary);
+	if(!isCompressing)
+		outfile = new std::ofstream(outpuf_file_name, std::ios_base::binary);
+
+	isCompressing = true;
+
+	if (!infile->is_open()) {
+		std::cerr << "Error " << sourcefilename << " was not found!\n";
+		return;
+	}
+	//get length of file
+	infile->seekg(0, infile->end);
+	infile_length = infile->tellg();
+	//set to the begining
+	infile->seekg(0, infile->beg);
+	std::cout << " Lenght of the " << sourcefilename << " file: " << infile_length << " \n";
+
+
+
 
 	Get_Distribution();
 	std::cout << "Distribution is done.\n";
 	//return;
+
 	Build_Dictionary();
 
 	std::cout << "Tree is done.\n";
 	//At this point the tree is irrelevant
 
 	//write to file the dictionary
-	outfile = new std::ofstream(outpuf_file_name, std::ios_base::binary);
-	Writedicttofile(words, dictionary_size, outfile);
+	WriteEntrydictionarytofile(words, dictionary_size, outfile);
 
 
 	Compressing_file();
@@ -82,15 +131,79 @@ void Huffman::Compres(std::string sourcefilename)
 
 	}*/
 
+}
+
+void Huffman::Decompres(std::string sourcefilename)
+{
+	if (isCompressing) {
+		std::cout << "Compressing is in progres quiting.\n";
+		return;
+	}
+	
+	infile_name = sourcefilename;
+	outpuf_file_name = sourcefilename + ".decom";//change this pls TODO
 
 
+	//make outputfile and inputfile
+	//TODO string kiterjesztés eltávolítása és lecserélése
+	if (infile) {
+		infile->close();
+		delete infile;
+	}
+	infile = new std::ifstream(sourcefilename, std::ios_base::binary);
+	if (outfile) {
+		outfile->close();
+		delete outfile;
+	}
+	outfile = new std::ofstream(outpuf_file_name, std::ios_base::binary);
+
+	if (!infile->is_open()) {
+		std::cerr << "Error " << sourcefilename << " was not found!\n";
+		return;
+	}
+	//get length of file
+	infile->seekg(0, infile->end);
+	infile_length = infile->tellg();
+	//set to the begining
+	infile->seekg(0, infile->beg);
+	std::cout << " Lenght of the compressed " << sourcefilename << " file: " << infile_length << " \n";
+
+	//Read the dictionary list
+	if (words)
+		delete words;
+	dictionary_size = ReadEntrydictionaryfromfile(words, infile);
+
+	for (size_t i = 0; i < dictionary_size; i++)
+	{
+		std::cout << bitToString( words[i].codebyte )<< "\n";
+		code_to_char_dictionary.insert(std::pair<unsigned int, Entry*>(words[i].codebyte, &words[i]));
+	}
+
+
+	std::cout << "Tree is loaded.\n";
+
+	
+	Decompressing_file();
+
+
+	std::cout << "DONE\n";
+
+	/*
+	for(int i = 0;i < dictionary_size;i++)
+	{
+		//cout<<words[i].code_length<<"\n";
+
+		addbits(words[i].codebyte, words[i].code_length);
+
+	}*/
 
 }
 
 
+
 //private functions
 
-
+/*
 void Huffman::Prepare_file(std::string sourcefilename)
 {
 	infile = new std::ifstream(sourcefilename, std::ios_base::binary);
@@ -107,7 +220,7 @@ void Huffman::Prepare_file(std::string sourcefilename)
 	std::cout << " Lenght of the "<<sourcefilename<<" file: " << infile_length << " \n";
 	//size_t s= infile.gcount();
 
-}
+}*/
 
 void Huffman::Get_Distribution()
 {
@@ -249,6 +362,12 @@ void Huffman::Recursive_crawling(Node* parent, std::string code, unsigned int& c
 		return;
 	}
 	code_length++;
+	if (code_length >= 32)
+	{
+		std::cout << "baj van codehosz 32!!!\n";
+		return;
+		//throw Exception;//TODO
+	}
 	codebyte = codebyte << 1;
 	Recursive_crawling(parent->left, code.append("0"), codebyte, code_length);
 	code.pop_back();
@@ -318,6 +437,7 @@ void Huffman::Compressing_file()
 
 	outfile->flush();
 	outfile->close();
+	outfile = nullptr;
 
 }
 
@@ -349,7 +469,6 @@ void Huffman::addbits_tobitbuffer(const unsigned int bits, short bit_length)
 }
 
 
-
 void Huffman::bitbuffer_to_filebuffer(const unsigned int& bits, const size_t byte_size)
 {
 	memcpy(outputbuffer + output_buffer_pos, &bits, byte_size);
@@ -368,6 +487,137 @@ void Huffman::filebuffer_to_stream(const char* buffer_, size_t size, std::ofstre
 	std::cout << "ha ezt látod akkor valamit elbasztál\n";
 }
 
+void Huffman::Decompressing_file()
+{
+
+	
+	//size_t byte_pos = infile->tellg();
+	size_t byte_left = infile_length- infile->tellg();
+
+
+
+
+	char* infilebuffer = new char[infile_buffer_size];
+	outputbuffer = new char[outputbuffer_size];
+
+
+	short clear_bits = 0;
+	short extra_clear_bits = 0;
+	unsigned long long bitbuffer = 0;
+	unsigned long bit_copy = 0;
+	//remove bits
+	short shortest_code = 3;
+	short longest_code = 10;
+	short offset = 0;
+	Entry* temp=0;
+
+
+	while (byte_left > infile_buffer_size)
+	{
+		infile->read(infilebuffer, infile_buffer_size);
+		byte_left -= infile_buffer_size;
+
+		for (int j = 0;j < infile_buffer_size;j++) {
+			
+		}
+	}
+
+	// read the rest of the file
+	if (byte_left > 0)
+	{
+
+		//cout << "rest\n";
+		infile->read(infilebuffer, byte_left);
+
+		for (int j = 0;j < byte_left;j++) {
+			
+		}
+	}
+
+
+
+	
+	for (int i = shortest_code;i <= longest_code;i++)
+	{
+		offset = (32 - i);
+		bit_copy = (bitbuffer >> (32 + offset))<<offset;
+		temp = code_to_char_dictionary[bit_copy];
+		if (temp)
+			break;
+	}
+	//do something with temp
+	if (temp == nullptr)
+		std::cout << "nagyon nagy baj van\n";
+	clear_bits += temp->code_length;
+	if (clear_bits >= 32) {
+		extra_clear_bits = clear_bits - 32;
+		bitbuffer=bitbuffer<<(temp->code_length - extra_clear_bits);
+		//add new bufferpart
+		//bitbuffer+=1
+		bitbuffer = bitbuffer << extra_clear_bits;
+		clear_bits = extra_clear_bits;
+	}
+	else
+	{
+		bitbuffer = bitbuffer << temp->code_length;
+		clear_bits += temp->code_length;
+	}
+
+	//std::bitset<32> bits(a);
+	//std::cout<< bits.to_string()<<"\n";
+
+
+
+
+	/*
+	Entry* entry_temp = nullptr;
+	while (byte_left > infile_buffer_size)
+	{
+		infile->read(infilebuffer, infile_buffer_size);
+		byte_left -= infile_buffer_size;
+
+		for (int j = 0;j < infile_buffer_size;j++) {
+			//get the correct code
+			entry_temp = char_to_code_dictionary[infilebuffer[j]];
+			//add them to the bitbuffer
+			addbits_tobitbuffer(entry_temp->codebyte, entry_temp->code_length);
+		}
+	}
+
+	// read the rest of the file
+	if (byte_left > 0)
+	{
+
+		//cout << "rest\n";
+		infile->read(infilebuffer, byte_left);
+
+		for (int j = 0;j < byte_left;j++) {
+			//get the correct code
+			entry_temp = char_to_code_dictionary[infilebuffer[j]];
+			//add them to the bitbuffer
+			addbits_tobitbuffer(entry_temp->codebyte, entry_temp->code_length);
+		}
+	}
+	//clear the rest of the bitbuffer
+	bitbuffer_to_filebuffer(bitbuff, ByteLengthFromCodeLenght(leftover));
+	outfile->write(outputbuffer, output_buffer_pos);
+	std::bitset<32> b(bitbuff);
+	std::cout << b << std::endl;
+	comlen += ByteLengthFromCodeLenght(leftover);
+	std::cout << "compresed length: " << comlen << std::endl;
+
+
+	*/
+
+	delete[] infilebuffer;
+
+	delete[] outputbuffer;
+
+	outfile->flush();
+	outfile->close();
+	outfile = nullptr;
+
+}
 
 
 

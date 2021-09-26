@@ -19,9 +19,69 @@ int main()
     std::cout << "Hello World!\n";
     //open the file
     Huffman coder;
-    coder.Compres("files/kennedy.xls");
+    //coder.Compres("files/kennedy.xls");
+    //coder.Decompres("files/kennedy.xls.huff");
+    
+    
+    int bit_pos = 0;
+    int leftover = 0;
+    unsigned long long bitbuffer = -1;
+    unsigned long bit_copy = 0;
+    //remove bits
+    short shortest_code = 3;
+    short longest_code = 10;
+    short offset = 0;
+    for (int i = shortest_code;i <= longest_code;i++)
+    {
+        offset = (32 - i);
+        bit_copy = (bitbuffer >> (32 + offset)) << offset;
+        std::bitset<32> bits(bit_copy);
+        std::cout << bits.to_string() << "\n";
+
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+    unsigned int a = 3;
+    unsigned long long bitbuffer = a;
+    bitbuffer = bitbuffer << 31;
+    bitbuffer += 1;
+    bitbuffer = bitbuffer << 1;
+    a = bitbuffer>>32;
+    std::cout << sizeof(bitbuffer) << "\n";
+
+    std::bitset<64> bits(bitbuffer);
+    std::cout << bits.to_string() << "\n";
+    
+    std::bitset<32> bits2(a);
+    std::cout << bits2.to_string() << "\n";
+
+    
+    */
+
+
+
+
+
+
+
     /*
     
+
+
+
+
+
+
     unsigned int byte = 0;
     unsigned int byte2 = 0;
     //printbyte(byte2);

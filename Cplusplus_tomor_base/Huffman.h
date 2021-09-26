@@ -27,7 +27,7 @@ public :
 	static int EntrycompareInterval(const void* a, const void* b);
 	static int EntrycompareIntervalbylength(const void* a, const void* b);
 
-
+	bool isCompressing = false;
 
 
 private:
@@ -45,7 +45,7 @@ private:
 	Entry* words = nullptr;
 	//byte code dictionary
 	std::map<char, Entry*> char_to_code_dictionary;
-	//std::map<unsigned int, Entry*> code_to_char_dictionary;
+	std::map<unsigned int, Entry*> code_to_char_dictionary;
 
 	//output file parameters
 	std::string outpuf_file_name = "output.huff";
@@ -67,27 +67,40 @@ private:
 
 
 public:
+
+
+
 	Huffman();
-	Huffman(std::string outfilename);
+	//Huffman(std::string outfilename);
 	~Huffman();
 
 	//compres sourcefilename file to outputfilename file
 	void Compres(std::string sourcefilename = "file.txt");
-	//void Decompres(std::string sourcefilename = "output.huff");
+	void Decompres(std::string sourcefilename = "output.huff");
 
 private:
-	void Prepare_file(std::string sourcefilename);
+	//void Prepare_file(std::string sourcefilename);
 	void Get_Distribution();
 	void Build_Dictionary();
 	void Recursive_build(Node* parent, Entry* arr, int arr_size, float P);
 	void Recursive_crawling(Node* parent, std::string code, unsigned int& codebyte, int code_length);
 	void Compressing_file();
+	void Decompressing_file();
 
 	void addbits_tobitbuffer(const unsigned int bits, short bit_length);
+	//void removebyte_frombitbuffer(const unsigned int bits, short bit_length);
+
+	//unsigned int getnext_4byte();
+	//void writebyte_to_buffer
 	
 
 	void bitbuffer_to_filebuffer(const unsigned int &bits,const unsigned int byte_size);
 	void filebuffer_to_stream(const char* buffer_,size_t size,std::ofstream *File);
+
+
+
+	static void WriteEntrydictionarytofile(Huffman::Entry* arr, size_t arrsize, std::ofstream* stream);
+	static size_t ReadEntrydictionaryfromfile(Huffman::Entry* &arr, std::ifstream* stream);
 
 
 

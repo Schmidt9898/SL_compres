@@ -13,3 +13,6 @@ Cplusplus_tomor_base/Debug/*
 Cplusplus_tomor_base/files/*
 Cplusplus_tomor_base/Release/*
 
+*.huff
+*.log
+Cplusplus_tomor_base/x64/*
