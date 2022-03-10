@@ -16,3 +16,6 @@ Cplusplus_tomor_base/Release/*
 *.huff
 *.log
 Cplusplus_tomor_base/x64/*
+*/build/*
+lession0/samples
+*.vscode
