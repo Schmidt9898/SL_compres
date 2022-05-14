@@ -32,7 +32,8 @@ for(int i=a.start_bit;i<a.get_size();i++)
 
 std::cout<<"--------------\n";
 a.deque(2);
-std::cout<<a.get_size()<<"\n--------------\n";
+std::cout<<a.get_size()<<"bitsize\n";
+std::cout<<a.get_block_size()<<"blocksize\n";
 a.deque(2);
 std::cout<<a.get_size()<<"\n--------------\n";
 a.deque(6);

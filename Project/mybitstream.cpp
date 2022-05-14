@@ -25,10 +25,16 @@ uchar c=bytes[block];
 return c >> (7 - bit) & 1;
 };
 
+bool Bitblock::remove_bit()
+{
+	bool t= (*this)[start_bit];
+	this->deque(1);
+	return t;
+}
 
 void Bitblock::expand(unsigned int n)
 {
-std::cout<<"expand with "<<n<<"\n";
+//std::cout<<"expand with "<<n<<"\n";
 
 	auto new_bytes=new uchar[capacity+n];
 	if(bytes!=nullptr){
@@ -42,25 +48,25 @@ std::cout<<"expand with "<<n<<"\n";
 size_t Bitblock::get_size(){
 	return cur_bit-start_bit;///sizeof(uchar) + 1;
 }
-
+size_t Bitblock::get_block_size(){
+	return ceil((cur_bit-start_bit)/8);
+}
 void Bitblock::deque(size_t n) //remove n bit from start
 {
-	start_bit+=n;
+	if (start_bit+n>cur_bit)
+	{
+		std::cout<<start_bit<<"   "<<cur_bit<<" WTF\n"; //TODO remove
+		start_bit=cur_bit;
+	}
+	else
+		start_bit+=n;
 /*
 if start_bit is greater than a treshold reallocate
 */
 
 
 }
-/*
-void Bitblock::set_bit(unsigned int idx,bool b)
-{
-if (b)
-	bits[idx/8] |= (unsigned int)1 << (7-(idx%8));
-else 
-	bits[idx/8] &= ~((unsigned int)1 << (7-(idx%8)));
-};
-*/
+
 
 void Bitblock::add_bit(bool val_)
 {

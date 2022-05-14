@@ -19,3 +19,8 @@ Cplusplus_tomor_base/x64/*
 */build/*
 lession0/samples
 *.vscode
+Project/opencv_world455.dll
+Project/opencv_world455d.dll
+Project/images
+Project/opencv
+
