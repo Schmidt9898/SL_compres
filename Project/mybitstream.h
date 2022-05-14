@@ -5,66 +5,45 @@
 #include <fstream>
 #include <iostream>
 
+/*
 
-//like a bitset but bigger
+blc 0 idx 0 ,  blc 1		blc 2
+0000 0000 , 0000 0001 , 0000 0010 , 
+
+*/
+typedef unsigned char uchar;
+
+//like a bitset but bigger much much biger
+//template<int b>
 class Bitblock{
-unsigned char * bits=nullptr;
+
+uchar * bytes=nullptr;
+size_t cur_bit=0; //end bit or current bit to write	current bit to write into in case of writing
 public:
+size_t start_bit=0; //start bit 			in case of remove from start or read startbit will move to next simbol start pos
 unsigned int capacity=0;//in byte
-int len=0;
+//unsigned int size=0;//in bits cur-start
+
+//Bitblock();
 Bitblock();
-Bitblock(bool b);
-Bitblock(unsigned char* b,int bit_len);
+Bitblock(uchar* data_,size_t data_s,int fill_bits);
 
 //only get
-bool operator[](int i);
+bool operator[](size_t i);
 //bool operator[]=(int i,bool val);
-//unsigned int get_size();
+//void setbit(size_t i,bool val);
 //unsigned int get_capacity();
+size_t get_size();
 
 //Bitblock(Bitblock &a);
 
 void expand(unsigned int n=1);
 //int offset=0;
-void deque(int n);//remove n bit from start
+void deque(size_t n);//remove n bit from start
 //void match();//find first bigest match
-void add_bits(Bitblock bits);
-void add_bit(bool b);                          
-void set_bit(unsigned int idx,bool b);                          
+//void add_bits(Bitblock bits);
+void add_bit(bool val_);                          
+//void set_bit(unsigned int idx,bool b);                          
 };
-
-
-
-template<int b>
-class MyBitstreamWriter{
-
-std::vector<char> buffer;
-	int offset=0;
-public:
-void Write_bits(const char* buff,int len);
-void setbit();
-void Flush();
-void Close();
-
-};
-
-template<int b>
-class MyBitstreamReader{
-	int offset= 0;
-public:
-std::vector<char> buffer;
-std::vector<char> file_buffer;
-MyBitstreamReader();
-void open(std::string filename);
-void bit_read(int offset=0);
-bool getbit(int i);
-//unsigned int Read_bits(,size_t length);
-};
-
-
-
-
-
-
 
 #endif

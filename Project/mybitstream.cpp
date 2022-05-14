@@ -5,42 +5,54 @@
 
 
 Bitblock::Bitblock(){
-	expand(1);
-}
-Bitblock::Bitblock(bool b){
-	expand(1);
-	add_bit(b);
-}
-Bitblock::Bitblock(unsigned char* b,int bit_len){
-	expand(len/8 + 1);
-	memcpy(bits[len/8],bits,capacity);
-	bits[len/8]
+expand(1);//TODO 1024
+start_bit=cur_bit=0;
 
 }
+Bitblock::Bitblock(uchar* data_,size_t data_s,int fill_bits){
+bytes=new uchar[data_s];
+capacity=data_s;
+memcpy(bytes,data_,capacity);
+cur_bit=capacity*sizeof(uchar)-fill_bits;
+start_bit=0; // may change
+}
 
-bool Bitblock::operator[](int i){
-char c=bits[i/8];
-return c >> (7 - i%8) & 1;
+
+bool Bitblock::operator[](size_t i){
+size_t block = i/sizeof(uchar);
+uchar bit = i%sizeof(uchar);
+uchar c=bytes[block];
+return c >> (7 - bit) & 1;
 };
 
-void Bitblock::add_bits(Bitblock bits)
-{
-
-};
 
 void Bitblock::expand(unsigned int n)
 {
-std::cout<<"expand\n";
+std::cout<<"expand with "<<n<<"\n";
 
-	auto new_bits=new unsigned char[capacity+n];
-	if(bits!=nullptr){
-		memcpy(new_bits,bits,capacity);
-		delete bits;
+	auto new_bytes=new uchar[capacity+n];
+	if(bytes!=nullptr){
+		memcpy(new_bytes,bytes,capacity);
+		delete bytes;
 	}
-	bits=new_bits;
+	bytes=new_bytes;
 	capacity+=n;
 }
 
+size_t Bitblock::get_size(){
+	return cur_bit-start_bit;///sizeof(uchar) + 1;
+}
+
+void Bitblock::deque(size_t n) //remove n bit from start
+{
+	start_bit+=n;
+/*
+if start_bit is greater than a treshold reallocate
+*/
+
+
+}
+/*
 void Bitblock::set_bit(unsigned int idx,bool b)
 {
 if (b)
@@ -48,16 +60,22 @@ if (b)
 else 
 	bits[idx/8] &= ~((unsigned int)1 << (7-(idx%8)));
 };
+*/
 
-void Bitblock::add_bit(bool b)
+void Bitblock::add_bit(bool val_)
 {
-if(len==capacity*8)
-	expand(1);
-set_bit(len,b);
-len++;
+size_t block = cur_bit/sizeof(uchar);
+uchar bit = cur_bit%sizeof(uchar);
+if(block>=capacity) //need expand
+	expand(1024);
+if(val_)
+	bytes[block] |= (128>>bit);
+else
+	bytes[block] &= ~(128>>bit);
+cur_bit++;
 };
 
-
+/*
 template<int b>
 void MyBitstreamWriter<b>::Write_bits(const char* buff,int len){
 
@@ -109,3 +127,4 @@ template<int b>
 bool MyBitstreamReader<b>::getbit(int i){
 	
 }
+*/

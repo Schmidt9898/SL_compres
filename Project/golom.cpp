@@ -4,7 +4,7 @@
 #include <string>
 #include <math.h>
 
-std::string golom(int codeword,int m)
+std::string golom(unsigned char codeword,short m)
 {
 std::string first="";
 std::string sec="";

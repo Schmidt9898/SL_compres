@@ -63,8 +63,8 @@ int main(){
 	std::cout<<"helo\n";
 
 std::string emotional="";
-for(int i=0;i<10;i++){
-	std::cout<<lev(i)<<"\n";
+for(int i=0;i<20;i++){
+	std::cout<<i<<" : "<<lev(i)<<"\n";
 	emotional+=lev(i);
 }
 
