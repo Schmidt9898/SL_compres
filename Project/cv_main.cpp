@@ -58,9 +58,9 @@ for(int i=-10;i<=10;i++)
 
 	std::cout<<"CV Test main.\n";
 
-	cv::Mat I=cv::imread("./images/1.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I=cv::imread("./images/0.png",cv::IMREAD_GRAYSCALE);
 	//cv::imwrite("./images/1.2.png",I);
-	cv::Mat I2=cv::imread("./images/5.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I2=cv::imread("./images/1.png",cv::IMREAD_GRAYSCALE);
 
 
 	CV_Assert(I.depth() == CV_8U);
