@@ -71,13 +71,36 @@ std::cout<<data.size()<<" original--------------\n";
 std::cout<<out.get_block_size()<<" compressed--------------\n";
 
 
-//for(size_t i=out.start_bit;i<out.cur_bit;i++)
-//	std::cout<<out[i];
+std::vector<uchar>* bytes=out.get_data();
+	std::cout<<bytes->size()<<" data write size\n";
+		std::ofstream f("test.bin",'w');
+		f.write((const char*)bytes->data(),bytes->size());
+		f.flush();
+		f.close();
+		
+		//delete bytes;
 
 
-while(out.get_size()>0)
+/////////////////////////////////////////
+
+std::ifstream input("test.bin", std::ios::binary);
+		std::vector<uchar> data_(
+			(std::istreambuf_iterator<char>(input)),
+			(std::istreambuf_iterator<char>()));//TODO check
+
+std::cout<<data_.size()<<" data read size\n";
+Bitblock in(data_.data(),data_.size(),0);
+
+//in.cur_bit=out.cur_bit;
+int n=memcmp ( in.bytes, out.bytes, in.capacity );	
+	std::cout<<n<<" compare\n";
+	std::cout<<in.capacity<<" "<<out.capacity<<" bytes\n";
+
+
+//while(in.get_size()>0)
+for(int i=0;i<data.size();i++)
 {
-uchar t_byte = golom_decode(m,out);
+uchar t_byte = golom_decode(m,in);
 //std::cout<<out.get_size()<<"\n";
 data2.push_back(t_byte);
 //std::cout<<" a";
@@ -92,7 +115,7 @@ for(size_t i=0;i<data.size();i++)
 	if(data[i]!=data2[i]){
 		std::cout<< (int)data[i]<<" - "<< (int)data2[i] <<"\n";
 		std::cout<<"test failed decompressed data not good\n";
-		break;
+		//break;
 	}
 }
 std::cout<<"test passed\n";

@@ -14,15 +14,16 @@ start_bit=cur_bit=0;
 Bitblock::Bitblock(uchar* data_,size_t data_s,int fill_bits){
 bytes=new uchar[data_s];
 capacity=data_s;
-memcpy(bytes,data_,capacity);
-cur_bit=capacity*sizeof(uchar)-fill_bits;
+memcpy(bytes,data_,data_s);
+std::cout<<fill_bits<<" fill \n";
+cur_bit=(capacity+1)*8;
 start_bit=0; // may change
 }
 
 
 bool Bitblock::operator[](size_t i){
-size_t block = i/sizeof(uchar);
-uchar bit = i%sizeof(uchar);
+size_t block = i/8;
+uchar bit = i%8;
 uchar c=bytes[block];
 return c >> (7 - bit) & 1;
 };
@@ -36,7 +37,6 @@ bool Bitblock::remove_bit()
 
 void Bitblock::expand(unsigned int n)
 {
-//std::cout<<"expand with "<<n<<"\n";
 
 	auto new_bytes=new uchar[capacity+n];
 	if(bytes!=nullptr){
@@ -45,10 +45,11 @@ void Bitblock::expand(unsigned int n)
 	}
 	bytes=new_bytes;
 	capacity+=n;
+std::cout<<"expand to "<<capacity<<"\n";
 }
 
 size_t Bitblock::get_size(){
-	return cur_bit-start_bit;///sizeof(uchar) + 1;
+	return cur_bit-start_bit;
 }
 size_t Bitblock::get_block_size(){
 	return ceil((cur_bit-start_bit)/8);
@@ -57,23 +58,31 @@ void Bitblock::deque(size_t n) //remove n bit from start
 {
 	if (start_bit+n>cur_bit)
 	{
-		std::cout<<start_bit<<"   "<<cur_bit<<" WTF\n"; //TODO remove
+		std::cout<<n<<"   "<<start_bit<<"   "<<cur_bit<<" Wrong deque\n"; //TODO remove
 		start_bit=cur_bit;
 	}
 	else
 		start_bit+=n;
-/*
-if start_bit is greater than a treshold reallocate
-*/
+}
 
+std::vector<uchar>* Bitblock::get_data(){
 
+	size_t last_byte= cur_bit/8+1;//TODO check
+	//size_t last_byte=capacity; 
+	//uchar mask = (cur_bit)%8;
+	std::cout<<last_byte<<" last byte\n"; //TODO remove
+
+	std::vector<uchar> *out_bytes = new std::vector<uchar>(last_byte,0);
+	memcpy(out_bytes->data(),bytes,last_byte);
+	//out_bytes[last_byte]=mask;
+	return out_bytes;	
 }
 
 
 void Bitblock::add_bit(bool val_)
 {
-size_t block = cur_bit/sizeof(uchar);
-uchar bit = cur_bit%sizeof(uchar);
+size_t block = cur_bit/8;
+uchar bit = cur_bit%8;
 if(block>=capacity) //need expand
 	expand(capacity);
 if(val_)

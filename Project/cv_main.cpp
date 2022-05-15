@@ -2,6 +2,11 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/core/mat.hpp"
 #include "golom.h"
+#include <filesystem>
+#include <fstream>
+
+namespace fs = std::filesystem;
+
 
 //TODO
 /*
@@ -16,22 +21,17 @@ add to bitblock
 decompres create original file
 
 automatate with script python
-
-
 */
 
-
-
-
-//	0	0		-0
-//	1	1		ceil(i/2)
-//	2	-1		-i/2
-//	3	2		-1
-//	4	-2		/2*-1
-//	5	3		-2
-//	6	-3		/2*-1
-//	7	4		-3
-//	8	-4		/2*-1
+//	0	0	
+//	1	1	
+//	2	-1	
+//	3	2	
+//	4	-2	
+//	5	3	
+//	6	-3	
+//	7	4	
+//	8	-4	
 int zigzag(int u)
 {
 	if(u%2)
@@ -47,20 +47,140 @@ int dezigzag(int u)
 		return u*-2;
 }
 
-int main(){
 
 
-for(int i=-10;i<=10;i++)
-	std::cout<<i<<"  "<<dezigzag(i)<<"  "<<zigzag(dezigzag(i))<<"\n";
 
 
-//system("pause");
+void compress(std::string src,std::string dest){
+	std::vector<fs::path> files;
+	cv::Mat _im0;
+
+	for (const auto & entry : fs::directory_iterator(src))
+	{
+		if(!fs::is_directory(entry.path()))
+		{
+			std::string path = entry.path().u8string();
+			if(path.find("0.png") != std::string::npos)
+				_im0=cv::imread(path,cv::IMREAD_GRAYSCALE);
+			else if (path.find(".png") != std::string::npos)
+				files.push_back(path);
+		}
+	}
+
+	cv::imwrite((fs::path(dest)/"0.png").u8string(),_im0);
+	uchar * _data0 = _im0.data;
+	int m=5;
+
+	for(auto path : files)
+	{
+		cv::Mat I=cv::imread(path.u8string(),cv::IMREAD_GRAYSCALE);
+		size_t size=I.size().height*I.size().width;
+		uchar * _I = I.data;
+		
+		Bitblock out;
+		for(int i=0;i<size;i++)
+		{		
+			golom_encode(dezigzag((int)_data0[i]-(int)_I[i]),m,out);
+		}
+		std::vector<uchar>* bytes=out.get_data();
+		std::ofstream f(dest/path.filename(),'w');
+		f.write((const char*)bytes->data(),bytes->size());
+		f.flush();
+		f.close();
+		//break;
+	}
+}
+void decompress(std::string src,std::string dest){
+	std::vector<fs::path> files;
+	cv::Mat _im0;
+
+	for (const auto & entry : fs::directory_iterator(src))
+	{
+		if(!fs::is_directory(entry.path()))
+		{
+			std::string path = entry.path().u8string();
+			if(path.find("0.png") != std::string::npos)
+				_im0=cv::imread(path,cv::IMREAD_GRAYSCALE);
+			else if (path.find(".png") != std::string::npos)
+				files.push_back(path);
+		}
+	}
+	
+
+	uchar * _data0 = _im0.data;
+	int m=5;
+
+	for(auto path : files){
+	cv::Mat I = cv::Mat::zeros(_im0.size(),CV_8U);
+	size_t size=I.size().height*I.size().width;
+	uchar * _I = I.data;
+
+		std::cout<<path<<" path \n";
+		std::ifstream input(path, std::ios::binary);
+		std::vector<uchar> data_(
+			(std::istreambuf_iterator<char>(input)),
+			(std::istreambuf_iterator<char>()));//TODO check
+		input.close();
+
+		Bitblock out(data_.data(),data_.size(),0);
+		
+		std::vector<int> decompressed;
+		//while(out.get_size()>0)
+		for(int i=0;i<size;i++)
+		{
+		int diff = golom_decode(m,out);
+		//std::cout<<out.get_size()<<"\n";
+		decompressed.push_back(diff);
+		//std::cout<<" a";
+		}
+
+		std::cout<<decompressed.size()<<" decomp size\n";
+		for(int i=0;i<size;i++)
+		{
+			_I[i] =  (uchar)  (_data0[i] - zigzag(decompressed[i]));
+		}
+		cv::imwrite((fs::path(dest)/path.filename()).u8string(),I);
+		cv::imshow("asd", I);
+		cv::waitKey();
+	}
+
+
+}
+
+
+
+
+int main(int argc, char** argv)
+{
+//std::cout << "You have entered " << argc-1 << " arguments:" << "\n";
+  
+if(argc<4){
+std::cout << "at least 3 arguments needed! \n";
+return 0;
+}
+char mode = *argv[1];
+std::string src(argv[2]);
+std::string dest(argv[3]);
+
+
+std::cout<<mode<<"  "<<src<<"  "<<dest<<"\n";
+
+
+if(mode == 'c')
+	compress(src,dest);
+else if(mode == 'd')
+	decompress(src,dest);
+else{//test
+	std::cout<<"invalid mode\n";
+
+
+
 
 	std::cout<<"CV Test main.\n";
 
-	cv::Mat I=cv::imread("./images/0.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I=cv::imread("D:/Programozas/Programok_gited/SL_compres/Project/images/0.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I2=cv::imread("D:/Programozas/Programok_gited/SL_compres/Project/images/1.png",cv::IMREAD_GRAYSCALE);
 	//cv::imwrite("./images/1.2.png",I);
-	cv::Mat I2=cv::imread("./images/1.png",cv::IMREAD_GRAYSCALE);
 
 
 	CV_Assert(I.depth() == CV_8U);
@@ -88,21 +208,47 @@ for(int i=-10;i<=10;i++)
 		//std::cout<<dezigzag((int)data[i]-(int)data2[i])<<" "<<  (int)data[i]-(int)data2[i]<<" decomp size\n";
 	}
 
-
-
-
 	//for(int i=0;i<s;i++)
-
 	std::cout<<s<<" s\n";
 	std::cout<<out.get_block_size()<<" comp\n";
 	std::cout<<I2.size()<<" size\n";
 
+		std::vector<uchar>* bytes=out.get_data();
+	std::cout<<bytes->size()<<" data write size\n";
+		std::ofstream f("test.bin",'w');
+		f.write((const char*)bytes->data(),bytes->size());
+		f.flush();
+		f.close();
+		
+		//delete bytes;
+
+
+/////////////////////////////////////////
+
+std::ifstream input("test.bin", std::ios::binary);
+		std::vector<uchar> data_(
+			(std::istreambuf_iterator<char>(input)),
+			(std::istreambuf_iterator<char>()));//TODO check
+
+	std::cout<<data_.size()<<" data read size\n";
+Bitblock in(bytes->data(),bytes->size(),0);
+
+int n=memcmp ( in.bytes, out.bytes, out.capacity );
+	
+	//std::cout<<in.cur_bit==out.cur_bit<<" compare\n";
+	//std::cout<<in.capacity<<" "<<out.capacity<<" bytes\n";
+
+//for(int i=0;i<data_.size();i++)
+//		std::cout<<(int)bytes->at(i)<<" != "<<(int)data_[i]<<"\n";
+	//if(bytes->at(i)!=data_[i])
+
+
 	std::vector<int> decompressed;
 
-	while(out.get_size()>0)
+	//while(in.get_size()>0)
+	for(int i=0;i<s;i++)
 	{
-	int diff = golom_decode(m,out);
-	//std::cout<<out.get_size()<<"\n";
+	int diff = golom_decode(m,in);
 	decompressed.push_back(diff);
 	//std::cout<<" a";
 	}
@@ -113,20 +259,26 @@ for(int i=-10;i<=10;i++)
 
 	for(int i=0;i<s;i++)
 	{
-		//dete[i]= (uchar)abs((int)data[i]-(int)data2[i]);
-		//dete[i] = (uchar)(dezigzag((int)data[i]-(int)data2[i])>32)*200;
-		dete[i] =  (uchar)  (data[i] - zigzag(decompressed[i]));//zigzag(decompressed[i]);
-		//if (dete[i]!=((int)data[i] - zigzag(dete[i])))
-		//	std::cout<<zigzag(dete[i])<<" "<<(int)dete[i]<<" "<<(int)data2[i]<<" \n";//<<"\n";
-		//std::cout<<zigzag(decompressed[i])<<" ";//<<"\n";
-		//if(!i%10)std::cout<<"\n";
+		//dete[i]= (uchar)abs(zigzag(decompressed[i]));
+		
+		dete[i] =  (uchar)  (data[i] - zigzag(decompressed[i]));
+		
+		//dete[i] =  (uchar)  (data[i] - zigzag(decompressed[i]));
+		
+		
+
 	}
 for(int i=0;i<s;i++)
 	if (dete[i]!=data2[i])
 	{
+		std::cout<<(int)dete[i]<<" "<<(int)data2[i]<<" error ";
 		std::cout<<"test failed\n";
 		break;
 	}
+
+		cv::imwrite("reconstract.png",E);
+		cv::imshow("asd", E);
+		cv::waitKey();
 
 
 	std::cout<<"\n";
@@ -134,6 +286,7 @@ for(int i=0;i<s;i++)
     int x=0, y = 0;
     int dx = 0;
     int dy = -1;
+}
 
 	//int j=0;
 	/*
@@ -187,10 +340,11 @@ for(int i=0;i<s;i++)
         }
     }*/
 
-	cv::imshow("decomp",E);
-	cv::imshow("orig",I2);
-	cv::waitKey();
+//	cv::imshow("decomp",E);
+//	cv::imshow("orig",I2);
+//	cv::waitKey();
 
 
 	return 0;
 }
+

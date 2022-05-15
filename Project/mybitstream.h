@@ -17,11 +17,11 @@ typedef unsigned char uchar;
 //template<int b>
 class Bitblock{
 
-uchar * bytes=nullptr;
 public:
+uchar * bytes=nullptr;
 size_t cur_bit=0; //end bit or current bit to write	current bit to write into in case of writing
 size_t start_bit=0; //start bit 			in case of remove from start or read startbit will move to next simbol start pos
-unsigned int capacity=0;//in byte
+size_t capacity=0;//in byte
 //unsigned int size=0;//in bits cur-start
 
 //Bitblock();
@@ -36,6 +36,7 @@ bool operator[](size_t i);
 //unsigned int get_capacity();
 size_t get_size();
 size_t get_block_size();
+std::vector<uchar>* get_data();
 
 //Bitblock(Bitblock &a);
 
