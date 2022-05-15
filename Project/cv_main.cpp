@@ -60,9 +60,9 @@ void compress(std::string src,std::string dest){
 		if(!fs::is_directory(entry.path()))
 		{
 			std::string path = entry.path().u8string();
-			if(path.find("0.png") != std::string::npos)
+			if(entry.path().filename().u8string()=="0.png")
 				_im0=cv::imread(path,cv::IMREAD_GRAYSCALE);
-			else if (path.find(".png") != std::string::npos)
+			else if (entry.path().filename().u8string().find(".png") != std::string::npos)
 				files.push_back(path);
 		}
 	}
@@ -87,6 +87,7 @@ void compress(std::string src,std::string dest){
 		f.write((const char*)bytes->data(),bytes->size());
 		f.flush();
 		f.close();
+		delete bytes;
 		//break;
 	}
 }
@@ -99,13 +100,14 @@ void decompress(std::string src,std::string dest){
 		if(!fs::is_directory(entry.path()))
 		{
 			std::string path = entry.path().u8string();
-			if(path.find("0.png") != std::string::npos)
+			if(entry.path().filename().u8string()=="0.png")
 				_im0=cv::imread(path,cv::IMREAD_GRAYSCALE);
-			else if (path.find(".png") != std::string::npos)
+			else if (entry.path().filename().u8string().find(".png") != std::string::npos)
 				files.push_back(path);
 		}
 	}
 	
+	cv::imwrite((fs::path(dest)/"0.png").u8string(),_im0);
 
 	uchar * _data0 = _im0.data;
 	int m=5;
@@ -115,7 +117,7 @@ void decompress(std::string src,std::string dest){
 	size_t size=I.size().height*I.size().width;
 	uchar * _I = I.data;
 
-		std::cout<<path<<" path \n";
+		//std::cout<<path<<" path \n";
 		std::ifstream input(path, std::ios::binary);
 		std::vector<uchar> data_(
 			(std::istreambuf_iterator<char>(input)),
@@ -134,14 +136,14 @@ void decompress(std::string src,std::string dest){
 		//std::cout<<" a";
 		}
 
-		std::cout<<decompressed.size()<<" decomp size\n";
+		//std::cout<<decompressed.size()<<" decomp size\n";
 		for(int i=0;i<size;i++)
 		{
 			_I[i] =  (uchar)  (_data0[i] - zigzag(decompressed[i]));
 		}
 		cv::imwrite((fs::path(dest)/path.filename()).u8string(),I);
-		cv::imshow("asd", I);
-		cv::waitKey();
+		//cv::imshow("asd", I);
+		//cv::waitKey();
 	}
 
 
@@ -171,15 +173,15 @@ if(mode == 'c')
 else if(mode == 'd')
 	decompress(src,dest);
 else{//test
-	std::cout<<"invalid mode\n";
+	std::cout<<"test mode\n";
 
 
 
 
 	std::cout<<"CV Test main.\n";
 
-	cv::Mat I=cv::imread("D:/Programozas/Programok_gited/SL_compres/Project/images/0.png",cv::IMREAD_GRAYSCALE);
-	cv::Mat I2=cv::imread("D:/Programozas/Programok_gited/SL_compres/Project/images/1.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I=cv::imread("./images/0.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I2=cv::imread("./images/1.png",cv::IMREAD_GRAYSCALE);
 	//cv::imwrite("./images/1.2.png",I);
 
 
@@ -230,17 +232,8 @@ std::ifstream input("test.bin", std::ios::binary);
 			(std::istreambuf_iterator<char>(input)),
 			(std::istreambuf_iterator<char>()));//TODO check
 
-	std::cout<<data_.size()<<" data read size\n";
-Bitblock in(bytes->data(),bytes->size(),0);
+	Bitblock in(data_.data(),data_.size(),0);
 
-int n=memcmp ( in.bytes, out.bytes, out.capacity );
-	
-	//std::cout<<in.cur_bit==out.cur_bit<<" compare\n";
-	//std::cout<<in.capacity<<" "<<out.capacity<<" bytes\n";
-
-//for(int i=0;i<data_.size();i++)
-//		std::cout<<(int)bytes->at(i)<<" != "<<(int)data_[i]<<"\n";
-	//if(bytes->at(i)!=data_[i])
 
 
 	std::vector<int> decompressed;
@@ -287,64 +280,6 @@ for(int i=0;i<s;i++)
     int dx = 0;
     int dy = -1;
 }
-
-	//int j=0;
-	/*
-    for(int i=0;i<MAX(X, Y)*MAX(X, Y);i++)
-	{
-		
-		if((-X/2 < x <= X/2) && (-Y/2 < y <= Y/2)){
-			dete[i] = (uchar)i%255;  //(uchar)(abs((int)data[i]-(int)data2[i])>16)*200;
-            //std::cout<<x<<","<< y<<"\n";
-		}
-        if (x == y || (x < 0 && x == -y) || (x > 0 && x == 1-y))
-		{
-		int t=dx;
-            dx= -dy;
-			 dy = t;
-		}
-        x = x+dx;
-		y = y+dy;
-	}
-*/
-	//std::cout<<j<<" j\n";
-
-
-//spirál bejárás
-//cv::imwrite("./images/tomor16.png",E);
-
-
-
-
-/*
-    switch(channels)
-    {
-    case 1:
-        {
-            cv::MatIterator_<uchar> it, end;
-            for( it = I.begin<uchar>(), end = I.end<uchar>(); it != end; ++it)
-				std::cout<<(int)*it<<" ";
-                //*it = table[*it];
-            break;
-        }
-    case 3:
-        {
-            cv::MatIterator_<cv::Vec3b> it, end;
-            for( it = I.begin<cv::Vec3b>(), end = I.end<cv::Vec3b>(); it != end; ++it)
-            {
-				std::cout<<*it<<" ";
-                //(*it)[0] = table[(*it)[0]];
-                //(*it)[1] = table[(*it)[1]];
-                //(*it)[2] = table[(*it)[2]];
-            }
-        }
-    }*/
-
-//	cv::imshow("decomp",E);
-//	cv::imshow("orig",I2);
-//	cv::waitKey();
-
-
 	return 0;
 }
 

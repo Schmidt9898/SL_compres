@@ -15,7 +15,7 @@ Bitblock::Bitblock(uchar* data_,size_t data_s,int fill_bits){
 bytes=new uchar[data_s];
 capacity=data_s;
 memcpy(bytes,data_,data_s);
-std::cout<<fill_bits<<" fill \n";
+//std::cout<<fill_bits<<" fill \n";
 cur_bit=(capacity+1)*8;
 start_bit=0; // may change
 }
@@ -45,7 +45,7 @@ void Bitblock::expand(unsigned int n)
 	}
 	bytes=new_bytes;
 	capacity+=n;
-std::cout<<"expand to "<<capacity<<"\n";
+//std::cout<<"expand to "<<capacity<<"\n";
 }
 
 size_t Bitblock::get_size(){
@@ -70,7 +70,7 @@ std::vector<uchar>* Bitblock::get_data(){
 	size_t last_byte= cur_bit/8+1;//TODO check
 	//size_t last_byte=capacity; 
 	//uchar mask = (cur_bit)%8;
-	std::cout<<last_byte<<" last byte\n"; //TODO remove
+	//std::cout<<last_byte<<" last byte\n"; //TODO remove
 
 	std::vector<uchar> *out_bytes = new std::vector<uchar>(last_byte,0);
 	memcpy(out_bytes->data(),bytes,last_byte);
