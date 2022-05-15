@@ -1,11 +1,13 @@
 #include "mybitstream.h"
 
 
-
+Bitblock::~Bitblock(){
+delete [] bytes;
+}
 
 
 Bitblock::Bitblock(){
-expand(1);//TODO 1024
+expand(1024);//TODO 1024
 start_bit=cur_bit=0;
 
 }
@@ -39,7 +41,7 @@ void Bitblock::expand(unsigned int n)
 	auto new_bytes=new uchar[capacity+n];
 	if(bytes!=nullptr){
 		memcpy(new_bytes,bytes,capacity);
-		delete bytes;
+		delete[] bytes;
 	}
 	bytes=new_bytes;
 	capacity+=n;
@@ -73,7 +75,7 @@ void Bitblock::add_bit(bool val_)
 size_t block = cur_bit/sizeof(uchar);
 uchar bit = cur_bit%sizeof(uchar);
 if(block>=capacity) //need expand
-	expand(1024);
+	expand(capacity);
 if(val_)
 	bytes[block] |= (128>>bit);
 else

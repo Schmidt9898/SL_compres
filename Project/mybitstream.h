@@ -27,6 +27,7 @@ unsigned int capacity=0;//in byte
 //Bitblock();
 Bitblock();
 Bitblock(uchar* data_,size_t data_s,int fill_bits);
+~Bitblock();
 
 //only get
 bool operator[](size_t i);
