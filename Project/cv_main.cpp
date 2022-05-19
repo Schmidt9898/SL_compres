@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <fstream>
 
+
+#include "omp.h"
 namespace fs = std::filesystem;
 
 
@@ -51,7 +53,7 @@ int dezigzag(int u)
 
 
 
-void compress(std::string src,std::string dest){
+void compress(std::string src,std::string dest,int m){
 	std::vector<fs::path> files;
 	cv::Mat _im0;
 
@@ -69,10 +71,11 @@ void compress(std::string src,std::string dest){
 
 	cv::imwrite((fs::path(dest)/"0.png").u8string(),_im0);
 	uchar * _data0 = _im0.data;
-	int m=5;
-
-	for(auto path : files)
+	//int m=5;
+	#pragma omp parallel for 
+	for(int j=0;j<files.size();j++)
 	{
+		auto path = files[j];
 		cv::Mat I=cv::imread(path.u8string(),cv::IMREAD_GRAYSCALE);
 		size_t size=I.size().height*I.size().width;
 		uchar * _I = I.data;
@@ -91,7 +94,7 @@ void compress(std::string src,std::string dest){
 		//break;
 	}
 }
-void decompress(std::string src,std::string dest){
+void decompress(std::string src,std::string dest,int m){
 	std::vector<fs::path> files;
 	cv::Mat _im0;
 
@@ -110,9 +113,13 @@ void decompress(std::string src,std::string dest){
 	cv::imwrite((fs::path(dest)/"0.png").u8string(),_im0);
 
 	uchar * _data0 = _im0.data;
-	int m=5;
+	//int m=5;
+	//for(auto path : files){
+	#pragma omp parallel for 
+		for(int j=0;j<files.size();j++)
+	{
+		auto path = files[j];
 
-	for(auto path : files){
 	cv::Mat I = cv::Mat::zeros(_im0.size(),CV_8U);
 	size_t size=I.size().height*I.size().width;
 	uchar * _I = I.data;
@@ -163,15 +170,21 @@ return 0;
 char mode = *argv[1];
 std::string src(argv[2]);
 std::string dest(argv[3]);
+int m=5;
+if (argc>=5)
+{
+	//std::string i(argv[4]);
+	m=std::stoi(argv[4]);
+}
 
 
 std::cout<<mode<<"  "<<src<<"  "<<dest<<"\n";
 
 
 if(mode == 'c')
-	compress(src,dest);
+	compress(src,dest,m);
 else if(mode == 'd')
-	decompress(src,dest);
+	decompress(src,dest,m);
 else{//test
 	std::cout<<"test mode\n";
 
@@ -180,8 +193,8 @@ else{//test
 
 	std::cout<<"CV Test main.\n";
 
-	cv::Mat I=cv::imread("./images/0.png",cv::IMREAD_GRAYSCALE);
-	cv::Mat I2=cv::imread("./images/1.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I=cv::imread("./0.png",cv::IMREAD_GRAYSCALE);
+	cv::Mat I2=cv::imread("./1.png",cv::IMREAD_GRAYSCALE);
 	//cv::imwrite("./images/1.2.png",I);
 
 

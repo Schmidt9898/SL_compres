@@ -1,4 +1,5 @@
 import json
+import time
 import cv2 as cv
 import os
 import sys
@@ -21,6 +22,13 @@ if len(args)<2:
 
 mode=args[0]
 src=args[1]
+m=args[2] if len(args)>2 else 5
+
+exce = open("./mes.txt", "a")
+
+
+
+
 #dest=args[2]
 
 #if not os.path.exists(dest):
@@ -52,18 +60,23 @@ if mode == 'c':
 	f.write(json.dumps(names))
 	f.close()
 		
-
-	os.system(".\\release\\run.exe c "+src+" "+dest)
+	start=time.time()
+	os.system(".\\release\\run.exe c "+src+" "+dest+" "+str(m))
+	print(time.time()-start)
 
 	shutil.make_archive(src, 'zip', dest)
 	
-	os.system("pause")
+	#os.system("pause")
 
 	for o,idx in names.items():
 		os.rename(src+"/"+idx, src+"/"+o)
 
-
+	fsize=os.path.getsize(src+".zip")
 	shutil.rmtree(dest)
+
+	exce.write(src+","+str(m)+","+str(fsize)+"\n")
+	exce.flush()
+	exce.close()
 
 
 elif mode == 'd':
@@ -86,10 +99,10 @@ elif mode == 'd':
 
 	#os.system("pause")
 
-	os.system(".\\release\\run.exe d "+dest+" "+src)
+	os.system(".\\release\\run.exe d "+dest+" "+src+" "+str(m))
 
 
-	os.system("pause")
+	#os.system("pause")
 
 
 	f = open(dest+"/names.txt", "r")
